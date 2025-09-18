@@ -134,7 +134,7 @@ if user_input:
         # st.markdown(href, unsafe_allow_html=True)
 
         # ========== TOGGLE: SHOW SOURCES ==========
-        with st.expander("🔍 Show True Sources (For Teachers & Nerds 😉)"):
+        with st.expander("🔍 Show True Sources"):
             st.write("**Raw Facts from Wikipedia:**")
             st.write(facts)
             st.markdown(f"**Source:** [{source_url}]({source_url})")
