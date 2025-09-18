@@ -16,7 +16,7 @@ api_key = os.getenv("GROQ_API_KEY")
 
 
 if not api_key:
-    st.error("🚨 OpenAI API key not found. Please set it in .env file.")
+    st.error("🚨  API key not found. Please set it in .env file.")
     st.stop()
 
 # client = OpenAI(api_key=api_key)  
@@ -25,12 +25,12 @@ client = Groq(api_key=api_key)
 st.set_page_config(page_title="AfroFacts / Wetin Happen?", page_icon="🇳🇬", layout="centered")
 
 # ========== TITLE & INTRO ==========
-st.title("🇳🇬 AfroFacts / Wetin Happen?")
+st.title("AfroFacts")
 st.markdown("### Type a Nigerian place, person, or event → Get the TRUE story told like Nollywood 🎬")
 st.caption("No fiction. Just facts… with flavor. Made with ❤️ for Nigerian history.")
 
 # ========== INPUT ==========
-user_input = st.text_input("Enter a Nigerian town, person, or landmark (e.g., 'Queen Amina', 'Olumo Rock', 'Ibadan'):", "")
+user_input = st.text_input("Enter a Nigerian town, person, or landmark (e.g., 'Osun', 'Olumo Rock', 'Ibadan'):", "")
 
 # ========== HELPER: FETCH WIKI FACTS ==========
 def get_wiki_facts(query, sentences=3):
@@ -119,19 +119,19 @@ if user_input:
         st.write(story)
 
         # ========== IMAGE GENERATION (OPTIONAL) ==========
-        if st.button("🖼️ Generate Naija-Style Image (DALL·E)"):
-            with st.spinner("🎨 Creating image... (may take 10-20 sec)"):
-                image_url = generate_story_image(user_input)
-                if image_url:
-                    st.image(image_url, caption=f"AI-generated scene from {user_input}", use_column_width=True)
-                else:
-                    st.error("Image generation failed. Try again or check OpenAI key.")
+        # if st.button("🖼️ Generate Naija-Style Image (DALL·E)"):
+        #     with st.spinner("🎨 Creating image... (may take 10-20 sec)"):
+        #         image_url = generate_story_image(user_input)
+        #         if image_url:
+        #             st.image(image_url, caption=f"AI-generated scene from {user_input}", use_column_width=True)
+        #         else:
+        #             st.error("Image generation failed. Try again or check OpenAI key.")
 
-        # ========== DOWNLOAD BUTTON ==========
-        pdf_bytes = create_download_pdf(story, user_input)
-        b64 = base64.b64encode(pdf_bytes).decode()
-        href = f'<a href="application/pdf;base64,{b64}" download="WetinHappen_{user_input.replace(" ", "_")}.pdf">📥 Download Story as PDF</a>'
-        st.markdown(href, unsafe_allow_html=True)
+        # # ========== DOWNLOAD BUTTON ==========
+        # pdf_bytes = create_download_pdf(story, user_input)
+        # b64 = base64.b64encode(pdf_bytes).decode()
+        # href = f'<a href="application/pdf;base64,{b64}" download="WetinHappen_{user_input.replace(" ", "_")}.pdf">📥 Download Story as PDF</a>'
+        # st.markdown(href, unsafe_allow_html=True)
 
         # ========== TOGGLE: SHOW SOURCES ==========
         with st.expander("🔍 Show True Sources (For Teachers & Nerds 😉)"):
@@ -144,5 +144,5 @@ if user_input:
 
 # ========== FOOTER ==========
 st.markdown("---")
-st.caption("Built for Nigerian Hackathon — Reviving history, one AI story at a time. 🇳🇬")
+st.caption("Reviving history, one AI story at a time. 🇳🇬")
 st.caption("AfroFacts — Wetin Happen for Your Village?")
