@@ -5,6 +5,8 @@ import os
 from dotenv import load_dotenv
 from groq import Groq
 import tempfile
+import pyttsx3 
+import base64
 
 # ========== LOAD ENV VARS ==========
 load_dotenv()
@@ -25,10 +27,12 @@ st.markdown("### Type a Nigerian place, person, or event → Get the TRUE story 
 st.caption("No fiction. Just facts… with flavor. Made for Nigerian history.")
 
 # ========== INPUT ==========
-user_input = st.text_input("Enter a Nigerian town, person, or landmark (e.g., 'Ahmadu Bello', 'Olumo Rock', 'Ibadan'):", "")
+user_input = st.text_input(
+    "Enter a Nigerian town, person, or landmark (e.g., 'Ahmadu Bello', 'Olumo Rock', 'Ibadan'):",
+    ""
+)
 
 def get_wiki_facts(query):
-    # Clean query
     query = query.strip()
     if not query:
         return "Empty query provided.", "", []
@@ -42,7 +46,6 @@ def get_wiki_facts(query):
                 facts = data["extract"]
                 source_url = data.get("content_urls", {}).get("desktop", {}).get("page", "")
 
-                # Grab images if available
                 images = []
                 if "thumbnail" in data and data["thumbnail"].get("source"):
                     images.append(data["thumbnail"]["source"])
@@ -56,8 +59,6 @@ def get_wiki_facts(query):
             return f"Wikipedia returned status {res.status_code}", "", []
     except Exception as e:
         return f"Error fetching data: {str(e)}", "", []
-
-
 
 # ========== HELPER: GPT STORY REWRITER ==========
 def generate_naija_story(facts, topic):
@@ -84,7 +85,6 @@ WIKIPEDIA FACTS:
 OUTPUT:
 Only the story, no disclaimers or explanations.
 """
-
     try:
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
@@ -105,7 +105,28 @@ def generate_story_image(topic):
     url = f"https://image.pollinations.ai/prompt/{prompt.replace(' ', '+')}"
     return url
 
+# ========== HELPER: OFFLINE TTS ==========
+def text_to_speech(story_text, filename="story.mp3"):
+    engine = pyttsx3.init()
+    # Optional: adjust voice/speed
+    engine.setProperty("rate", 160)  # speed
+    engine.setProperty("volume", 0.9)  # volume
 
+    # Save to file
+    engine.save_to_file(story_text, filename)
+    engine.runAndWait()
+    return filename
+
+def autoplay_audio(file_path: str):
+    with open(file_path, "rb") as f:
+        data = f.read()
+    b64 = base64.b64encode(data).decode()
+    md = f"""
+        <audio autoplay controls>
+        <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+        </audio>
+    """
+    st.markdown(md, unsafe_allow_html=True)
 
 # ========== MAIN LOGIC ==========
 if user_input:
@@ -120,9 +141,14 @@ if user_input:
         st.markdown("### 📖 Your Story:")
         st.write(story)
 
+        # ========== TTS BUTTON ==========
+        if st.button("🔊 Listen to Story"):
+            with st.spinner("🎶 Generating audio..."):
+                filename = text_to_speech(story)
+                autoplay_audio(filename)
+                st.success("Playing story audio 🎧")
 
-
-        # ========== IMAGE GENERATION (OPTIONAL) ==========
+        # ========== IMAGE GENERATION ==========
         if st.button("🖼️ Generate Naija-Style Image"):
             with st.spinner("🎨 Creating image..."):
                 image_url = generate_story_image(user_input)
@@ -130,13 +156,12 @@ if user_input:
                     st.image(image_url, caption=f"AI-generated scene from {user_input}", use_column_width=True)
                 else:
                     st.error("Image generation failed. Try again later.")
-         #==============================================
-         # ========== WIKIPEDIA IMAGES ==========
+
+            # ========== WIKIPEDIA IMAGES ==========
             if wiki_images:
                 st.markdown("### 🖼️ From the Archives")
-            for img in wiki_images:
-             st.image(img, caption=f"Wikipedia image of {user_input}", use_column_width=True)
-           
+                for img in wiki_images:
+                    st.image(img, caption=f"Wikipedia image of {user_input}", use_column_width=True)
 
         # ========== TOGGLE: SHOW SOURCES ==========
         with st.expander("🔍 Show True Sources"):
